@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pinboard To-Do</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Nunito:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --red: #e60023;
+            --red-hover: #c0001e;
+            --red-light: #ffeef0;
+            --bg: #f5f5f5;
+            --white: #ffffff;
+            --text: #111111;
+            --muted: #767676;
+            --border: #e8e8e8;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.10);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.13);
+            --shadow-hover: 0 8px 32px rgba(0, 0, 0, 0.18);
+            --radius: 16px;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'Nunito', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 0 80px;
+        }
+
+        /* NAV */
+        nav {
+            width: 100%;
+            background: var(--white);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            padding: 12px 28px;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .nav-logo svg {
+            flex-shrink: 0;
+        }
+
+        .nav-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 900;
+            color: var(--red);
+            letter-spacing: -0.5px;
+        }
+
+        .nav-search {
+            flex: 1;
+            max-width: 480px;
+            background: var(--bg);
+            border: none;
+            border-radius: 24px;
+            padding: 10px 18px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.93rem;
+            color: var(--text);
+            outline: none;
+            transition: box-shadow 0.2s;
+        }
+
+        .nav-search:focus {
+            box-shadow: 0 0 0 2px var(--red);
+        }
+
+        /* MAIN */
+        .main {
+            width: 100%;
+            max-width: 680px;
+            padding: 36px 16px 0;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 6vw, 3rem);
+            font-weight: 900;
+            color: var(--text);
+            line-height: 1.1;
+            margin-bottom: 6px;
+        }
+
+        .hero p {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        /* Progress */
+        .progress-wrap {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 18px 22px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .progress-text strong {
+            color: var(--red);
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--red);
+            border-radius: 999px;
+            transition: width 0.4s cubic-bezier(.4, 0, .2, 1);
+            width: 0%;
+        }
+
+        .pct-label {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--red);
+            min-width: 40px;
+            text-align: right;
+        }
+
+        /* Add task card */
+        .add-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.2s;
+        }
+
+        .add-card:focus-within {
+            box-shadow: var(--shadow-md);
+        }
+
+        .add-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .add-input {
+            flex: 1;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.95rem;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .add-input::placeholder {
+            color: #aaa;
+        }
+
+        .add-input:focus {
+            border-color: var(--red);
+        }
+
+        .btn-add {
+            background: var(--red);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 22px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.12s;
+            white-space: nowrap;
+        }
+
+        .btn-add:hover {
+            background: var(--red-hover);
+        }
+
+        .btn-add:active {
+            transform: scale(0.97);
+        }
+
+        .add-meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .label-tag {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .priority-pills {
+            display: flex;
+            gap: 6px;
+        }
+
+        .pill {
+            border: 2px solid var(--border);
+            background: transparent;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            color: var(--muted);
+        }
+
+        .pill:hover {
+            border-color: currentColor;
+        }
+
+        .pill.sel-high {
+            background: #ffeef0;
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .pill.sel-medium {
+            background: #fff8e6;
+            border-color: #f0a500;
+            color: #c88400;
+        }
+
+        .pill.sel-low {
+            background: #edfff4;
+            border-color: #2db87a;
+            color: #1e9060;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--white);
+            border: 2px solid var(--border);
+            border-radius: 24px;
+            padding: 7px 18px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--muted);
+            transition: all 0.15s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .filter-btn:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .filter-btn.active {
+            background: var(--red);
+            border-color: var(--red);
+            color: white;
+            box-shadow: 0 2px 10px rgba(230, 0, 35, 0.25);
+        }
+
+        /* Task cards — Pinterest masonry feel */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            padding: 16px 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            animation: popIn 0.22s cubic-bezier(.4, 0, .2, 1);
+            transition: box-shadow 0.2s, transform 0.2s;
+            cursor: default;
+        }
+
+        .task-card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .task-card.done {
+            opacity: 0.6;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Pin icon checkbox */
+        .pin-btn {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--red-light);
+            transition: background 0.15s, transform 0.15s;
+        }
+
+        .pin-btn:hover {
+            background: var(--red);
+        }
+
+        .pin-btn:hover svg path,
+        .pin-btn:hover svg circle {
+            stroke: white;
+        }
+
+        .pin-btn:active {
+            transform: scale(0.9);
+        }
+
+        .task-card.done .pin-btn {
+            background: #eee;
+        }
+
+        .task-card.done .pin-btn svg path,
+        .task-card.done .pin-btn svg circle {
+            stroke: #bbb;
+        }
+
+        /* Pin SVG */
+        .pin-svg path,
+        .pin-svg circle {
+            stroke: var(--red);
+            fill: none;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+        }
+
+        .task-card.done .pin-svg path,
+        .task-card.done .pin-svg circle {
+            stroke: #bbb;
+        }
+
+        .task-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-text {
+            font-size: 0.97rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.45;
+            word-break: break-word;
+            transition: color 0.2s;
+        }
+
+        .task-card.done .task-text {
+            color: var(--muted);
+            text-decoration: line-through;
+        }
+
+        .task-footer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .badge {
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-high {
+            background: #ffeef0;
+            color: var(--red);
+        }
+
+        .badge-medium {
+            background: #fff8e6;
+            color: #c88400;
+        }
+
+        .badge-low {
+            background: #edfff4;
+            color: #1e9060;
+        }
+
+        .badge-done {
+            background: #f0f0f0;
+            color: #888;
+        }
+
+        .task-time {
+            font-size: 0.72rem;
+            color: #bbb;
+            margin-left: auto;
+        }
+
+        .btn-delete {
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .btn-delete:hover {
+            background: #ffeef0;
+            color: var(--red);
+        }
+
+        /* Empty */
+        .empty {
+            text-align: center;
+            padding: 60px 0 20px;
+            display: none;
+        }
+
+        .empty-icon {
+            width: 72px;
+            height: 72px;
+            background: var(--red-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 2rem;
+        }
+
+        .empty h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+        }
+
+        .empty p {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        /* Footer */
+        .list-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .btn-clear {
+            background: none;
+            border: 2px solid var(--border);
+            border-radius: 24px;
+            padding: 7px 18px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-clear:hover {
+            border-color: var(--red);
+            color: var(--red);
+            background: var(--red-light);
+        }
+
+        .count-label {
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        .count-label strong {
+            color: var(--text);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAV -->
+    <nav>
+        <a class="nav-logo" href="#">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <circle cx="14" cy="14" r="14" fill="#e60023" />
+                <path
+                    d="M14 6C9.58 6 6 9.58 6 14c0 3.38 2.04 6.3 4.98 7.6-.07-.62-.13-1.58.03-2.26.14-.6.95-4.03.95-4.03s-.24-.49-.24-1.21c0-1.13.66-1.98 1.48-1.98.7 0 1.04.52 1.04 1.15 0 .7-.45 1.75-.68 2.72-.19.81.4 1.47 1.2 1.47 1.44 0 2.47-1.85 2.47-4.04 0-1.67-1.12-2.84-3.03-2.84-2.14 0-3.43 1.6-3.43 3.3 0 .62.18 1.05.45 1.35.12.14.14.2.1.36-.05.18-.15.6-.2.77-.06.23-.24.31-.44.23-1.24-.51-1.82-1.87-1.82-3.4 0-2.47 2.03-5.3 6.08-5.3 3.2 0 5.32 2.32 5.32 4.81 0 3.22-1.8 5.63-4.45 5.63-.87 0-1.69-.47-1.97-1.02l-.54 2.04c-.2.73-.72 1.65-1.08 2.2.81.25 1.68.38 2.57.38 4.42 0 8-3.58 8-8s-3.58-8-8-8z"
+                    fill="white" />
+            </svg>
+            <span class="nav-title">Pinboard</span>
+        </a>
+        <input class="nav-search" type="text" placeholder="Search your pins…" id="search-input" />
+    </nav>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <div class="hero">
+            <h1>Your Pinboard ✦</h1>
+            <p>Pin your tasks, check them off, stay inspired.</p>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-wrap">
+            <span class="progress-text"><strong id="stat-done">0</strong> pinned done</span>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <span class="pct-label" id="pct-label">0%</span>
+        </div>
+
+        <!-- Add task -->
+        <div class="add-card">
+            <div class="add-row">
+                <input class="add-input" type="text" id="task-input" placeholder="What do you want to pin today?"
+                    maxlength="120" autocomplete="off" />
+                <button class="btn-add" id="btn-add">+ Pin it</button>
+            </div>
+            <div class="add-meta">
+                <span class="label-tag">Priority:</span>
+                <div class="priority-pills">
+                    <button class="pill" data-p="high">🔴 High</button>
+                    <button class="pill sel-medium" data-p="medium">🟡 Medium</button>
+                    <button class="pill" data-p="low">🟢 Low</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">All Pins</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="done">Completed</button>
+            <button class="filter-btn" data-filter="high">🔴 High</button>
+            <button class="filter-btn" data-filter="medium">🟡 Medium</button>
+            <button class="filter-btn" data-filter="low">🟢 Low</button>
+        </div>
+
+        <!-- Task list -->
+        <div class="task-list" id="task-list"></div>
+
+        <!-- Empty state -->
+        <div class="empty" id="empty-msg">
+            <div class="empty-icon">📌</div>
+            <h3>Nothing pinned yet</h3>
+            <p>Add a task above to get started!</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="list-footer">
+            <span class="count-label"><strong id="stat-left">0</strong> tasks remaining</span>
+            <button class="btn-clear" id="btn-clear">Clear completed</button>
+        </div>
+
+    </div>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('pinterest-todos') || '[]');
+        let filter = 'all';
+        let selectedPriority = 'medium';
+        let searchQuery = '';
+
+        // Priority pill selection
+        document.querySelectorAll('.pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                selectedPriority = pill.dataset.p;
+                document.querySelectorAll('.pill').forEach(p => {
+                    p.className = 'pill';
+                });
+                pill.classList.add(`sel-${selectedPriority}`);
+            });
+        });
+
+        function save() {
+            localStorage.setItem('pinterest-todos', JSON.stringify(tasks));
+        }
+
+        function timeAgo(ts) {
+            const diff = Date.now() - ts;
+            const m = Math.floor(diff / 60000);
+            if (m < 1) return 'just now';
+            if (m < 60) return `${m}m ago`;
+            const h = Math.floor(m / 60);
+            if (h < 24) return `${h}h ago`;
+            return `${Math.floor(h / 24)}d ago`;
+        }
+
+        function addTask() {
+            const input = document.getElementById('task-input');
+            const text = input.value.trim();
+            if (!text) { input.focus(); return; }
+            tasks.unshift({ id: Date.now(), text, done: false, priority: selectedPriority, ts: Date.now() });
+            input.value = '';
+            save();
+            render();
+        }
+
+        function toggleTask(id) {
+            const t = tasks.find(t => t.id === id);
+            if (t) { t.done = !t.done; save(); render(); }
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            save();
+            render();
+        }
+
+        function clearDone() {
+            tasks = tasks.filter(t => !t.done);
+            save();
+            render();
+        }
+
+        function escHtml(s) {
+            return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function render() {
+            const list = document.getElementById('task-list');
+            const empty = document.getElementById('empty-msg');
+
+            let visible = tasks.filter(t => {
+                if (filter === 'active') return !t.done;
+                if (filter === 'done') return t.done;
+                if (filter === 'high') return t.priority === 'high';
+                if (filter === 'medium') return t.priority === 'medium';
+                if (filter === 'low') return t.priority === 'low';
+                return true;
+            });
+
+            if (searchQuery) {
+                visible = visible.filter(t => t.text.toLowerCase().includes(searchQuery));
+            }
+
+            // Stats
+            const total = tasks.length;
+            const done = tasks.filter(t => t.done).length;
+            document.getElementById('stat-done').textContent = done;
+            document.getElementById('stat-left').textContent = total - done;
+            const pct = total ? Math.round((done / total) * 100) : 0;
+            document.getElementById('progress-fill').style.width = pct + '%';
+            document.getElementById('pct-label').textContent = pct + '%';
+
+            if (visible.length === 0) {
+                list.innerHTML = '';
+                empty.style.display = 'block';
+            } else {
+                empty.style.display = 'none';
+                list.innerHTML = visible.map(t => `
+        <div class="task-card ${t.done ? 'done' : ''}" data-id="${t.id}">
+          <button class="pin-btn" onclick="toggleTask(${t.id})" title="${t.done ? 'Unpin' : 'Mark done'}">
+            <svg class="pin-svg" width="15" height="15" viewBox="0 0 15 15">
+              ${t.done
+                        ? `<path d="M2 7.5l4 4 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke="#e60023"/>`
+                        : `<circle cx="7.5" cy="5" r="2.5"/><path d="M7.5 7.5V13M5 10h5"/>`
+                    }
+            </svg>
+          </button>
+          <div class="task-body">
+            <div class="task-text">${escHtml(t.text)}</div>
+            <div class="task-footer">
+              ${t.done
+                        ? `<span class="badge badge-done">✓ Done</span>`
+                        : `<span class="badge badge-${t.priority}">${t.priority === 'high' ? '🔴 High' : t.priority === 'medium' ? '🟡 Medium' : '🟢 Low'}</span>`
+                    }
+              <span class="task-time">${timeAgo(t.ts)}</span>
+            </div>
+          </div>
+          <button class="btn-delete" onclick="deleteTask(${t.id})" title="Remove">✕</button>
+        </div>
+      `).join('');
+            }
+        }
+
+        // Events
+        document.getElementById('btn-add').addEventListener('click', addTask);
+        document.getElementById('task-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
+        document.getElementById('btn-clear').addEventListener('click', clearDone);
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                filter = btn.dataset.filter;
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                render();
+            });
+        });
+
+        document.getElementById('search-input').addEventListener('input', e => {
+            searchQuery = e.target.value.trim().toLowerCase();
+            render();
+        });
+
+        render();
+    </script>
+</body>
+
+</html>
